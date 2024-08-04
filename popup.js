@@ -1,8 +1,7 @@
 const allowedSitesTextarea = document.getElementById('allowedSitesTextarea');
 const addSiteButton = document.getElementById('addSiteButton');
-const cookiesHeader = document.getElementById('cookiesHeader');
 const cookiesInfo = document.getElementById('cookiesInfo');
-const deleteNonAllowedCookiesButton = document.getElementById('deleteNonAllowedCookiesButton');
+const deleteNonAllowedDataButton = document.getElementById('deleteNonAllowedDataButton');
 
 const LOCAL_STORAGE_ALLOWEDDOMAINS_KEY = "us.jrcpl.CookieDookie.allowedDomains";
 
@@ -34,7 +33,7 @@ async function load() {
     allowedSitesTextarea.value = allowDomains.join("\n");
     }
   catch (error) {
-    console.error(error);
+    console.error(error.message);
   }
 }
 
@@ -48,7 +47,7 @@ async function save() {
     await chrome.storage.local.set({ [LOCAL_STORAGE_ALLOWEDDOMAINS_KEY]: allowedDomains });
   }
   catch (error) {
-    console.error(error);
+    console.error(error.message);
   }
 }
 
@@ -70,21 +69,25 @@ function filterForNonAllowedCookies(cookies) {
 async function update() {
   const cookies = await chrome.cookies.getAll({});
   const nonAllowedCookies = filterForNonAllowedCookies(cookies);
+  const nonAllowedCookieSLDs = [...new Set(nonAllowedCookies.map(cookie => getSecondLevelDomain(cookie.domain)))];
 
-  cookiesHeader.textContent = `Cookies (${cookies.length})`;
-  deleteNonAllowedCookiesButton.textContent = `Delete ${nonAllowedCookies.length} Unwanted Cookies`;
+  if (nonAllowedCookieSLDs.length === 1) {
+    deleteNonAllowedDataButton.textContent = `Delete Data From ${nonAllowedCookieSLDs.length} Site`;
+  }
+  else {
+    deleteNonAllowedDataButton.textContent = `Delete Data From ${nonAllowedCookieSLDs.length} Sites`;    
+  }
 
   if (nonAllowedCookies.length == 0) {
     cookiesInfo.innerHTML = "";
-    deleteNonAllowedCookiesButton.disabled = true;
+    deleteNonAllowedDataButton.disabled = true;
   }
   else {
-    const nonAllowedCookieSLDs = [...new Set(nonAllowedCookies.map(cookie => getSecondLevelDomain(cookie.domain)))];
-    cookiesInfo.innerHTML = nonAllowedCookieSLDs.slice(0, 5).map(str => "• " + str).join("<br>");
-    if (nonAllowedCookies.length > 5) {
+    cookiesInfo.innerHTML = nonAllowedCookieSLDs.slice(0, 7).map(str => "• " + str).join("<br>");
+    if (nonAllowedCookies.length > 7) {
       cookiesInfo.innerHTML += "<br>• …and more";
     }
-    deleteNonAllowedCookiesButton.disabled = false;
+    deleteNonAllowedDataButton.disabled = false;
   }
 }
 
@@ -138,13 +141,10 @@ allowedSitesTextarea.addEventListener("input", async (event) => {
   await update();
 });
 
-deleteNonAllowedCookiesButton.addEventListener("click", async (event) => {  
+deleteNonAllowedDataButton.addEventListener("click", async (event) => {  
   try {
-    const cookies = await chrome.cookies.getAll({});
-    const nonAllowedCookies = filterForNonAllowedCookies(cookies);
-
-    let pending = nonAllowedCookies.map(deleteCookie);
-    await Promise.all(pending);
+    let allowedDomains = getAllowedDomainsFromUI();
+    clearBrowsingDataExcept(allowedDomains);
   } catch (error) {
     console.error(error.message);
   } finally {
@@ -153,27 +153,43 @@ deleteNonAllowedCookiesButton.addEventListener("click", async (event) => {
 });
 
 
-// from https://github.com/GoogleChrome/chrome-extensions-samples/blob/main/api-samples/cookies/cookie-clearer/popup.js
-function deleteCookie(cookie) {
-  // Cookie deletion is largely modeled off of how deleting cookies works when using HTTP headers.
-  // Specific flags on the cookie object like `secure` or `hostOnly` are not exposed for deletion
-  // purposes. Instead, cookies are deleted by URL, name, and storeId. Unlike HTTP headers, though,
-  // we don't have to delete cookies by setting Max-Age=0; we have a method for that ;)
-  //
-  // To remove cookies set with a Secure attribute, we must provide the correct protocol in the
-  // details object's `url` property.
-  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#Secure
-  const protocol = cookie.secure ? 'https:' : 'http:';
+async function clearBrowsingDataExcept(allowedDomains) {
+  try {
+    const removalOptions = {
+      "since": 0, // Clear data from all time
+      "excludeOrigins": allowedDomains.flatMap(domain => [
+        new URL(`http://${domain}`).origin,
+        new URL(`https://${domain}`).origin
+      ]),
+    };
 
-  // Note that the final URL may not be valid. The domain value for a standard cookie is prefixed
-  // with a period (invalid) while cookies that are set to `cookie.hostOnly == true` do not have
-  // this prefix (valid).
-  // https://developer.chrome.com/docs/extensions/reference/cookies/#type-Cookie
-  const cookieUrl = `${protocol}//${cookie.domain}${cookie.path}`;
+    const dataToRemove = {
+      "appcache": true,
+      "cache": true,
+      "cacheStorage": true,
+      "cookies": true,
+      // "downloads": false,
+      "fileSystems": true,
+      // "formData": false,
+      // "history": false,
+      "indexedDB": true,
+      "localStorage": true,
+      // "passwords": false,
+      "serviceWorkers": true,
+      "webSQL": true
+    };
 
-  return chrome.cookies.remove({
-    url: cookieUrl,
-    name: cookie.name,
-    storeId: cookie.storeId
-  });
+    await new Promise((resolve, reject) => {
+      chrome.browsingData.remove(removalOptions, dataToRemove, () => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+  } catch (error) {
+    console.error(error.message);
+  }
 }

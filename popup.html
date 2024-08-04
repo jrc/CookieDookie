@@ -2,24 +2,19 @@
 <html>
   <head>
     <script src="popup.js" type="module"></script>
-    <style>
-      body {
-        width: 320px;
-      }
-    </style>
-    </head>
+  </head>
   <body>
-    <h2><label for="allowedSitesTextarea">Allowed Sites</label></h2>
+    <h2>Allowed Sites</h2>
 
     <textarea id="allowedSitesTextarea" rows="24" cols="32" placeholder="example.com\nexample.com\nexample.com"></textarea>
     <p><button id="addSiteButton">Add This Site</button></p>
     
     <hr>
 
-    <h2 id="cookiesHeader">Cookies</h2>
+    <h2>Delete Browsing Data</h2>
     
-    <p>All stored cookies from non-allowed sites will be deleted immediately.</p>
+    <p>Cookies, cache, and storage data from all other (non-allowed) sites will be deleted immediately.</p>
     <div id="cookiesInfo"></div>
-    <p><button id="deleteNonAllowedCookiesButton">Delete All Unwanted Cookies</button></p>
+    <p><button id="deleteNonAllowedDataButton">Delete Unwanted Data</button></p>
   </body>
 </html>

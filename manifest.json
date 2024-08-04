@@ -1,9 +1,9 @@
 {
-  "name": "Cookie Dookie",
+  "name": "Clean",
   "manifest_version": 3,
   "version": "1.0",
-  "description": "A small and simple cookie manager. Keep a list of trusted sites, so you can quickly and easily delete unwanted cookies from all others.",
-  "permissions": ["cookies", "storage"],
+  "description": "A simple utility for cleaning up unwanted cookies, cache, and storage data. Make a list of allowed sites, so you can easily delete data from all others.",
+  "permissions": ["cookies", "browsingData", "storage"],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html"
