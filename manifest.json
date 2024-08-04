@@ -1,0 +1,11 @@
+{
+  "name": "Cookie Dookie",
+  "manifest_version": 3,
+  "version": "1.0",
+  "description": "A small and simple cookie manager. Keep a list of trusted sites, so you can quickly and easily delete unwanted cookies from all others.",
+  "permissions": ["cookies", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

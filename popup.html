@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="popup.js" type="module"></script>
+    <style>
+      body {
+        width: 320px;
+      }
+    </style>
+    </head>
+  <body>
+    <h2><label for="allowedSitesTextarea">Allowed Sites</label></h2>
+
+    <textarea id="allowedSitesTextarea" rows="24" cols="32" placeholder="example.com\nexample.com\nexample.com"></textarea>
+    <p><button id="addSiteButton">Add This Site</button></p>
+    
+    <hr>
+
+    <h2 id="cookiesHeader">Cookies</h2>
+    
+    <p>All stored cookies from non-allowed sites will be deleted immediately.</p>
+    <div id="cookiesInfo"></div>
+    <p><button id="deleteNonAllowedCookiesButton">Delete All Unwanted Cookies</button></p>
+  </body>
+</html>
