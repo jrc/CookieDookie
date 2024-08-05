@@ -9,6 +9,9 @@ const LOCAL_STORAGE_ALLOWEDDOMAINS_KEY = "us.jrcpl.CookieDookie.allowedDomains";
 // Pure utility function
 // e.g. "www.apple.com" -> "apple.com", "careers.bbc.co.uk" -> "bbc.co.uk"
 function extractMeaningfulDomain(domain) {
+  // Remove any leading dot, e.g. ".bbc.co.uk"
+  domain = domain.replace(/^\./, '');
+
   const parts = domain.split('.');
 
   if (parts.length > 2 && parts.at(-1).length === 2 && parts.at(-2).length <= 3) {
@@ -72,6 +75,35 @@ function filterForNonAllowedCookies(cookies) {
 
 // Read from Cookies API and update UI elements based on current state
 async function update() {
+  // Update Allowed Sites section
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab?.url) {
+    try {
+      let url = new URL(tab.url);
+
+      let domain = extractMeaningfulDomain(url.hostname);
+      let allowedDomains = getAllowedDomainsFromUI();
+    
+      addSiteButton.textContent = `Add This Site (${domain})`;
+      addSiteButton.disabled = allowedDomains.includes(domain);
+
+      addSiteButton.addEventListener("click", async (event) => {  
+        allowedDomains.push(domain);
+        allowedDomains = [...new Set(allowedDomains)].sort();
+        allowedSitesTextarea.value = allowedDomains.join("\n");
+
+        // Perform after delay to allow UI values to be set
+        setTimeout(async () => {
+          await save();
+          await update();
+        }, 0);
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  // Update Delete Browsing Data section
   const cookies = await chrome.cookies.getAll({});
   const nonAllowedCookies = filterForNonAllowedCookies(cookies);
   const nonAllowedCookieSLDs = [...new Set(nonAllowedCookies.map(cookie => extractMeaningfulDomain(cookie.domain)))];
@@ -100,41 +132,9 @@ async function update() {
 // The async IIFE is necessary because Chrome <89 does not support top level await.
 (async function initPopupWindow() {
   addSiteButton.disabled = true;
-
   allowedSitesTextarea.placeholder = allowedSitesTextarea.placeholder.replace(/\\n/g, '\n');
 
-  try {
-    await load();
-  }
-  catch (error) {
-  }
-
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  if (tab?.url) {
-    try {
-      let url = new URL(tab.url);
-
-      let domain = extractMeaningfulDomain(url.hostname);
-      let allowedDomains = getAllowedDomainsFromUI();
-    
-      addSiteButton.textContent = `Add This Site (${domain})`;
-      addSiteButton.disabled = allowedDomains.includes(domain);
-
-      addSiteButton.addEventListener("click", async (event) => {  
-        allowedDomains.push(domain);
-        allowedDomains = [...new Set(allowedDomains)].sort();
-        allowedSitesTextarea.value = allowedDomains.join("\n");
-        
-        await save();
-        
-        addSiteButton.disabled = false;
-      });
-    } catch {
-      // ignore
-    }
-  }
-
+  await load();
   await update();
 })();
 
