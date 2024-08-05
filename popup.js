@@ -111,22 +111,20 @@ async function update() {
       let url = new URL(tab.url);
 
       let domain = getSecondLevelDomain(url.hostname);
+      let allowedDomains = getAllowedDomainsFromUI();
     
       addSiteButton.textContent = `Add This Site (${domain})`;
+      addSiteButton.disabled = allowedDomains.includes(domain);
 
-      let allowedDomains = getAllowedDomainsFromUI();
-  
       addSiteButton.addEventListener("click", async (event) => {  
         allowedDomains.push(domain);
         allowedDomains = [...new Set(allowedDomains)].sort();
-        allowedSitesTextarea.textContent = allowedDomains.join("\n");
-
+        allowedSitesTextarea.value = allowedDomains.join("\n");
+        
         await save();
-      });
-
-      if (!allowedDomains.includes(domain)) {
+        
         addSiteButton.disabled = false;
-      }
+      });
     } catch {
       // ignore
     }
