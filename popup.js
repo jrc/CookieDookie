@@ -6,14 +6,19 @@ const deleteNonAllowedDataButton = document.getElementById('deleteNonAllowedData
 const LOCAL_STORAGE_ALLOWEDDOMAINS_KEY = "us.jrcpl.CookieDookie.allowedDomains";
 
 
-// Pure utility function, e.g. "www.apple.com" -> "apple.com"
-function getSecondLevelDomain(hostname) {
-  var domain = hostname;
+// Pure utility function
+// e.g. "www.apple.com" -> "apple.com", "careers.bbc.co.uk" -> "bbc.co.uk"
+function extractMeaningfulDomain(domain) {
   const parts = domain.split('.');
-  if (parts.length >= 2) {
-    domain = parts.slice(-2).join('.');
+
+  if (parts.length > 2 && parts.at(-1).length === 2 && parts.at(-2).length <= 3) {
+      // Likely a ccTLD + generic SLD (e.g., .co.uk, .com.au)
+      // See also https://publicsuffix.org/
+      return domain.replace(/^(www|blog|app|news|careers)\./, '');
   }
-  return domain;
+
+  // Default: Keep only the last two components (SLD + TLD)
+  return parts.slice(-2).join('.');
 }
 
 // Parsing the Allowed Sites textarea and return array of user-allowed domains 
@@ -69,7 +74,7 @@ function filterForNonAllowedCookies(cookies) {
 async function update() {
   const cookies = await chrome.cookies.getAll({});
   const nonAllowedCookies = filterForNonAllowedCookies(cookies);
-  const nonAllowedCookieSLDs = [...new Set(nonAllowedCookies.map(cookie => getSecondLevelDomain(cookie.domain)))];
+  const nonAllowedCookieSLDs = [...new Set(nonAllowedCookies.map(cookie => extractMeaningfulDomain(cookie.domain)))];
 
   if (nonAllowedCookieSLDs.length === 1) {
     deleteNonAllowedDataButton.textContent = `Delete Data From ${nonAllowedCookieSLDs.length} Site`;
@@ -110,7 +115,7 @@ async function update() {
     try {
       let url = new URL(tab.url);
 
-      let domain = getSecondLevelDomain(url.hostname);
+      let domain = extractMeaningfulDomain(url.hostname);
       let allowedDomains = getAllowedDomainsFromUI();
     
       addSiteButton.textContent = `Add This Site (${domain})`;
