@@ -65,8 +65,8 @@ function filterForNonAllowedCookies(cookies) {
   let allowedDomains = getAllowedDomainsFromUI();
 
   const nonAllowedCookies = cookies.filter(cookie => {
-    return !allowedDomains.some(domain => {
-      const regex = new RegExp(`${domain}$`);
+    return !allowedDomains.some(allowedDomain => {
+      const regex = new RegExp(`\.?${allowedDomain}$`);
       return regex.test(cookie.domain);
     });
   });
@@ -151,7 +151,10 @@ deleteNonAllowedDataButton.addEventListener("click", async (event) => {
   } catch (error) {
     console.error(error.message);
   } finally {
-    await update();
+    // FIXME: Wait for cookies to be deleted before update (shouldn't need this)
+    setTimeout(async () => {
+      await update();
+    }, 100);
   }
 });
 
@@ -192,7 +195,45 @@ async function clearBrowsingDataExcept(allowedDomains) {
       });
     });
 
+    // The "excludeOrigins" option of chrome.browsingData.remove() excludes
+    // cookies from "the whole registrable domain"
+    // https://developer.chrome.com/docs/extensions/reference/api/browsingData
+    // which means that if the user has e.g. foo.example.com
+    // in their allow list, unwanted cookies from example.com may be left.
+    // This handles that case.
+    const cookies = await chrome.cookies.getAll({});
+    const nonAllowedCookies = filterForNonAllowedCookies(cookies);
+    if (nonAllowedCookies.length > 0) {
+      for (const cookie of nonAllowedCookies) {
+        await deleteCookie(cookie); // Await each deletion individually
+      }
+    }
   } catch (error) {
     console.error(error.message);
   }
+}
+
+// from https://github.com/GoogleChrome/chrome-extensions-samples/blob/main/api-samples/cookies/cookie-clearer/popup.js
+function deleteCookie(cookie) {
+  // Cookie deletion is largely modeled off of how deleting cookies works when using HTTP headers.
+  // Specific flags on the cookie object like `secure` or `hostOnly` are not exposed for deletion
+  // purposes. Instead, cookies are deleted by URL, name, and storeId. Unlike HTTP headers, though,
+  // we don't have to delete cookies by setting Max-Age=0; we have a method for that ;)
+  //
+  // To remove cookies set with a Secure attribute, we must provide the correct protocol in the
+  // details object's `url` property.
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#Secure
+  const protocol = cookie.secure ? 'https:' : 'http:';
+
+  // Note that the final URL may not be valid. The domain value for a standard cookie is prefixed
+  // with a period (invalid) while cookies that are set to `cookie.hostOnly == true` do not have
+  // this prefix (valid).
+  // https://developer.chrome.com/docs/extensions/reference/cookies/#type-Cookie
+  const cookieUrl = `${protocol}//${cookie.domain}${cookie.path}`;
+
+  return chrome.cookies.remove({
+    url: cookieUrl,
+    name: cookie.name,
+    storeId: cookie.storeId
+  });
 }
