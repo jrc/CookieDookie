@@ -84,7 +84,7 @@ async function update() {
       let domain = extractMeaningfulDomain(url.hostname);
       let allowedDomains = getAllowedDomainsFromUI();
     
-      addSiteButton.textContent = `Add This Site (${domain})`;
+      addSiteButton.textContent = `➕ Add ${domain}`;
       addSiteButton.disabled = allowedDomains.includes(domain);
 
       addSiteButton.addEventListener("click", async (event) => {  
@@ -109,10 +109,10 @@ async function update() {
   const nonAllowedCookieSLDs = [...new Set(nonAllowedCookies.map(cookie => extractMeaningfulDomain(cookie.domain)))];
 
   if (nonAllowedCookieSLDs.length === 1) {
-    deleteNonAllowedDataButton.textContent = `Delete Data From ${nonAllowedCookieSLDs.length} Site`;
+    deleteNonAllowedDataButton.textContent = `🔥 Delete Data From ${nonAllowedCookieSLDs.length} Site`;
   }
   else {
-    deleteNonAllowedDataButton.textContent = `Delete Data From ${nonAllowedCookieSLDs.length} Sites`;    
+    deleteNonAllowedDataButton.textContent = `🔥 Delete Data From ${nonAllowedCookieSLDs.length} Sites`;    
   }
 
   if (nonAllowedCookies.length == 0) {
@@ -121,7 +121,7 @@ async function update() {
   }
   else {
     cookiesInfo.innerHTML = nonAllowedCookieSLDs.slice(0, 7).map(str => "• " + str).join("<br>");
-    if (nonAllowedCookies.length > 7) {
+    if (nonAllowedCookieSLDs.length > 7) {
       cookiesInfo.innerHTML += "<br>• …and more";
     }
     deleteNonAllowedDataButton.disabled = false;

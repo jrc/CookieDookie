@@ -1,25 +1,28 @@
-<!doctype html>
-<html>
-  <head>
-    <script src="popup.js" type="module"></script>
-    <style>
-      #allowedSitesTextarea {
-        font-size: small;
-      }
-    </style>
-  </head>
-  <body>
-    <h2>Allowed Sites</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="popup.js" type="module"></script>
+  <style>
+    #allowedSitesTextarea {
+      font-size: small;
+    }
+  </style>
+</head>
+<body>
+  <h2>Allowed Sites</h2>
 
-    <textarea id="allowedSitesTextarea" rows="24" cols="32" placeholder="example.com\nexample.com\nexample.com"></textarea>
-    <p><button id="addSiteButton">Add This Site</button></p>
-    
-    <hr>
+  <textarea id="allowedSitesTextarea" rows="12" cols="32" placeholder="example.com\nexample.com\nexample.com"></textarea>
+  <p><button id="addSiteButton">➕ Add This Site</button></p>
+  
+  <hr>
 
-    <h2>Delete Browsing Data</h2>
-    
-    <p>Cookies, cache, and storage data from all other (non-allowed) sites will be deleted immediately.</p>
-    <div id="cookiesInfo"></div>
-    <p><button id="deleteNonAllowedDataButton">Delete Unwanted Data</button></p>
-  </body>
+  <h2>Delete Browsing Data</h2>
+  
+  <p>Cookies, cache, and storage data from all other (non-allowed) sites will be deleted immediately.</p>
+  <p><button id="deleteNonAllowedDataButton">🔥 Delete Unwanted Data</button></p>
+  <div id="cookiesInfo"></div>
+</body>
 </html>
