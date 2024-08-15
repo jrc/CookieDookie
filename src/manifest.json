@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Burn",
+  "version": "1.0.0",
+  "description": "Clean up browser cruft with one click.",
+  "permissions": ["cookies", "browsingData", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png"
+    }
+  },
+  "icons": {
+    "16": "icon16.png",
+    "128": "icon128.png"
+  }
+}

@@ -1,3 +1,10 @@
+/*
+  Copyright © 2024 John R Chang
+
+  This project is licensed under the Creative Commons Attribution-NonCommercial
+  4.0 International License.
+*/
+
 const allowedSitesTextarea = document.getElementById('allowedSitesTextarea');
 const addSiteButton = document.getElementById('addSiteButton');
 const cookiesInfo = document.getElementById('cookiesInfo');

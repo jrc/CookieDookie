@@ -1,4 +1,4 @@
-Copyright © 2024 John Chang
+Copyright © 2024 John R Chang
 
 This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
 

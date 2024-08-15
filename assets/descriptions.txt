@@ -1,0 +1,42 @@
+Manifest description:
+
+Clean up browser cruft and enhance privacy with one click.
+
+
+
+Store description:
+
+Yeah, you know how your browser gets crufty over time? Burn lets you clean it up.
+
+You keep a list of your favorite sites where you want to stay logged in. Then, whenever you want, you click a button to delete the cruft in your browser from all other sites. By cruft, I mean all the local data (cookies, cache, local storage) from sites that you don't care about.
+
+No user data is collected by this extension. There is no backend. The code is open source.
+
+
+Privacy - Single purpose description:
+
+Clean up unwanted browser data
+
+
+Cookies justification:
+
+Required to identify and delete unwanted cookies.
+No cookies are created or modified. No user data is collected.
+
+
+Browsing data justification:
+
+Required to identify and delete unwanted site data, including cache, local databases, and service workers.
+No user data is collected.
+
+
+Storage justification:
+
+Required to persist the user's custom allowlist of websites.
+No user data is collected.
+
+
+Host permission justification:
+
+Required to use the chrome.cookies API on all domains.
+
